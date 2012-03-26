@@ -10,7 +10,7 @@ sfFacebookConnect = function(api_key, signin_url)
 };
 sfFacebookConnect.prototype.init = function()
 {
-  FB.init({appId: this.api_key, status: true, cookie: true, xfbml: true});
+    FB.init({appId: this.api_key, status: true, cookie: true, xfbml: true, oauth : true});
 }
 sfFacebookConnect.prototype.getSigninUrl = function()
 {
@@ -35,13 +35,19 @@ sfFacebookConnect.prototype.requireSession = function(forward, callback)
 	var current_obj = this;
 	callback = function(){current_obj.gotoLoginPage()};
   }
+
   FB.login(function(response) {
-    if (response.session) {
-      callback();
-    } else {
+     if (response.authResponse) {
+	 var accessToken = response.authResponse.accessToken;
+	 callback();
+     }
+    else {
       // user cancelled login
     }
-  });
+
+	  //if (response.session) {
+	  //      callback();
+      });
 };
 
 /*
