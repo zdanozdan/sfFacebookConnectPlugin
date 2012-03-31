@@ -17,14 +17,19 @@ class sfFacebook
 
   public static function getFacebookCookie()
   {
+    // NOT SUPPORTED
+    throw new Exception('oAuth should be used. getFacebookCookie not working anymore');
+
     $app_id = self::getApiKey();
     $application_secret = self::getApiSecret();
     $args = array();
-    if (!isset($_COOKIE['fbs_' . $app_id]))
+
+    if (!isset($_COOKIE['fbsr_' . $app_id]))
     {
       return null;
     }
-    parse_str(trim($_COOKIE['fbs_' . $app_id], '\\"'), $args);
+
+    parse_str(trim($_COOKIE['fbsr_' . $app_id], '\\"'), $args);
     ksort($args);
     $payload = '';
     foreach ($args as $key => $value)
@@ -52,24 +57,12 @@ class sfFacebook
    */
   public static function getFacebookClient()
   {
-    if (self::$client === null)
-    {
-      $params = array(
-        'appId'  => self::getApiId(),
-        'secret' => self::getApiSecret(),
-        'cookie' => self::getApiCookie(),
-        'domain' => self::getApiDomain()
-      );
+    $params = array(
+		    'appId'  => self::getApiId(),
+		    'secret' => self::getApiSecret()
+		    );
 
-      self::$client = new Facebook($params);
-    }
-
-    if (!self::$client)
-    {
-      error_log('Could not create facebook client.');
-    }
-
-    return self::$client;
+    return new Facebook($params);
   }
 
   /**
@@ -94,7 +87,6 @@ class sfFacebook
    */
   public static function getUser()
   {
-
     return self::getFacebookClient()->getUser();
   }
 
@@ -134,7 +126,7 @@ class sfFacebook
    */
   public static function getApiSecret()
   {
-
+    //return self::getFacebookClient()->getApiSecret();
     return sfConfig::get('app_facebook_api_secret');
   }
 
@@ -147,7 +139,7 @@ class sfFacebook
    */
   public static function getApiId()
   {
-
+    //return self::getFacebookClient()->getAppId();
     return sfConfig::get('app_facebook_api_id');
   }
 
@@ -160,7 +152,7 @@ class sfFacebook
    */
   public static function getApiCookie()
   {
-
+    throw new Exception('sfFacebook::getApiCookie not supported');
     return sfConfig::get('app_facebook_api_cookie', true);
   }
 
@@ -455,6 +447,16 @@ class sfFacebook
     return array_key_exists($culture, $culture_to_locale) ? $culture_to_locale[$culture] : $culture;
   }
 
+  public static function getLogoutUrl($params = array())
+  {
+    return self::getFacebookClient()->getLogoutUrl($params);
+  }
+
+  public static function getLoginUrl($params = array())
+  {
+    return self::getFacebookClient()->getLoginUrl($params);
+  }
+
   /**
   * @return interger $facebook_uid
   * @author fabriceb
@@ -462,11 +464,7 @@ class sfFacebook
   */
   public static function getAnyFacebookUid()
   {
-
-    $cookie = self::getFacebookCookie();
-    $fb_uid = $cookie['uid'];
-    sfContext::getInstance()->getLogger()->info('{sfFacebookConnect} Fb_uid from cookie : '.$fb_uid);
-
+    $fb_uid = self::getUser();
     return $fb_uid;
   }
 
